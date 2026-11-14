@@ -1,0 +1,503 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* GPUMonitorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* GPUMonitorApp.swift */; };
+		A10000020000000000000001 /* GPUMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000001 /* GPUMetrics.swift */; };
+		A10000030000000000000001 /* GPUCollecting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000001 /* GPUCollecting.swift */; };
+		A10000040000000000000001 /* IOKitGPUCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000001 /* IOKitGPUCollector.swift */; };
+		A10000050000000000000001 /* IORegFallbackCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000001 /* IORegFallbackCollector.swift */; };
+		A10000060000000000000001 /* GPUMonitorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000001 /* GPUMonitorViewModel.swift */; };
+		A10000070000000000000001 /* MenuBarPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000001 /* MenuBarPanelView.swift */; };
+		A10000080000000000000001 /* MetricRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000001 /* MetricRowView.swift */; };
+		A10000090000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000090000000000000001 /* Assets.xcassets */; };
+		A10000100000000000000001 /* GPUMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000110000000000000001 /* GPUMonitorTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B10000010000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F10000010000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C10000010000000000000001;
+			remoteInfo = GPUMonitor;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A20000010000000000000001 /* GPUMonitorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPUMonitorApp.swift; sourceTree = "<group>"; };
+		A20000020000000000000001 /* GPUMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPUMetrics.swift; sourceTree = "<group>"; };
+		A20000030000000000000001 /* GPUCollecting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPUCollecting.swift; sourceTree = "<group>"; };
+		A20000040000000000000001 /* IOKitGPUCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOKitGPUCollector.swift; sourceTree = "<group>"; };
+		A20000050000000000000001 /* IORegFallbackCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IORegFallbackCollector.swift; sourceTree = "<group>"; };
+		A20000060000000000000001 /* GPUMonitorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPUMonitorViewModel.swift; sourceTree = "<group>"; };
+		A20000070000000000000001 /* MenuBarPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarPanelView.swift; sourceTree = "<group>"; };
+		A20000080000000000000001 /* MetricRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricRowView.swift; sourceTree = "<group>"; };
+		A20000090000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A20000100000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000110000000000000001 /* GPUMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPUMonitorTests.swift; sourceTree = "<group>"; };
+		A30000010000000000000001 /* GPU Monitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GPU Monitor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A30000020000000000000001 /* GPUMonitorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GPUMonitorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C20000010000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C20000020000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D10000010000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				D10000020000000000000001 /* GPUMonitor */,
+				D10000070000000000000001 /* GPUMonitorTests */,
+				D10000080000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D10000020000000000000001 /* GPUMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000001 /* GPUMonitorApp.swift */,
+				D10000030000000000000001 /* Models */,
+				D10000040000000000000001 /* Services */,
+				D10000050000000000000001 /* ViewModels */,
+				D10000060000000000000001 /* Views */,
+				A20000090000000000000001 /* Assets.xcassets */,
+				A20000100000000000000001 /* Info.plist */,
+			);
+			path = GPUMonitor;
+			sourceTree = "<group>";
+		};
+		D10000030000000000000001 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000020000000000000001 /* GPUMetrics.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		D10000040000000000000001 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A20000030000000000000001 /* GPUCollecting.swift */,
+				A20000040000000000000001 /* IOKitGPUCollector.swift */,
+				A20000050000000000000001 /* IORegFallbackCollector.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		D10000050000000000000001 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A20000060000000000000001 /* GPUMonitorViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D10000060000000000000001 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A20000070000000000000001 /* MenuBarPanelView.swift */,
+				A20000080000000000000001 /* MetricRowView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		D10000070000000000000001 /* GPUMonitorTests */ = {
+			isa = PBXGroup;
+			children = (
+				A20000110000000000000001 /* GPUMonitorTests.swift */,
+			);
+			path = GPUMonitorTests;
+			sourceTree = "<group>";
+		};
+		D10000080000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A30000010000000000000001 /* GPU Monitor.app */,
+				A30000020000000000000001 /* GPUMonitorTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C10000010000000000000001 /* GPUMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E10000020000000000000001 /* Build configuration list for PBXNativeTarget "GPUMonitor" */;
+			buildPhases = (
+				C30000010000000000000001 /* Sources */,
+				C20000010000000000000001 /* Frameworks */,
+				C40000010000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GPUMonitor;
+			productName = GPUMonitor;
+			productReference = A30000010000000000000001 /* GPU Monitor.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C10000020000000000000001 /* GPUMonitorTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E10000030000000000000001 /* Build configuration list for PBXNativeTarget "GPUMonitorTests" */;
+			buildPhases = (
+				C30000020000000000000001 /* Sources */,
+				C20000020000000000000001 /* Frameworks */,
+				C40000020000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B20000010000000000000001 /* PBXTargetDependency */,
+			);
+			name = GPUMonitorTests;
+			productName = GPUMonitorTests;
+			productReference = A30000020000000000000001 /* GPUMonitorTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F10000010000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					C10000010000000000000001 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					C10000020000000000000001 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = C10000010000000000000001;
+					};
+				};
+			};
+			buildConfigurationList = E10000010000000000000001 /* Build configuration list for PBXProject "GPUMonitor" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = pt;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				pt,
+				Base,
+			);
+			mainGroup = D10000010000000000000001;
+			productRefGroup = D10000080000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C10000010000000000000001 /* GPUMonitor */,
+				C10000020000000000000001 /* GPUMonitorTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C40000010000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000090000000000000001 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C40000020000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C30000010000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* GPUMonitorApp.swift in Sources */,
+				A10000020000000000000001 /* GPUMetrics.swift in Sources */,
+				A10000030000000000000001 /* GPUCollecting.swift in Sources */,
+				A10000040000000000000001 /* IOKitGPUCollector.swift in Sources */,
+				A10000050000000000000001 /* IORegFallbackCollector.swift in Sources */,
+				A10000060000000000000001 /* GPUMonitorViewModel.swift in Sources */,
+				A10000070000000000000001 /* MenuBarPanelView.swift in Sources */,
+				A10000080000000000000001 /* MetricRowView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C30000020000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000100000000000000001 /* GPUMonitorTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B20000010000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C10000010000000000000001 /* GPUMonitor */;
+			targetProxy = B10000010000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		E20000010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E20000020000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		E20000030000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GPUMonitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.gpumonitor.GPUMonitor;
+				PRODUCT_MODULE_NAME = GPUMonitor;
+				PRODUCT_NAME = "GPU Monitor";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E20000040000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = GPUMonitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.gpumonitor.GPUMonitor;
+				PRODUCT_MODULE_NAME = GPUMonitor;
+				PRODUCT_NAME = "GPU Monitor";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		E20000050000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.gpumonitor.GPUMonitorTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GPU Monitor.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GPU Monitor";
+			};
+			name = Debug;
+		};
+		E20000060000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.gpumonitor.GPUMonitorTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GPU Monitor.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GPU Monitor";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E10000010000000000000001 /* Build configuration list for PBXProject "GPUMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E20000010000000000000001 /* Debug */,
+				E20000020000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E10000020000000000000001 /* Build configuration list for PBXNativeTarget "GPUMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E20000030000000000000001 /* Debug */,
+				E20000040000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E10000030000000000000001 /* Build configuration list for PBXNativeTarget "GPUMonitorTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E20000050000000000000001 /* Debug */,
+				E20000060000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = F10000010000000000000001 /* Project object */;
+}

@@ -15,18 +15,18 @@ Written natively in Swift and SwiftUI, it lives in the macOS menu bar with an Ap
 ### Popover Dashboard
 - **GPU Identification**: Reads the parent `IOPCIDevice` `model` property reliably (for example, `NVIDIA GeForce RTX 3060 Laptop GPU`), or falls back to `Detected GPU` without guessing a model name.
 - **Multi-GPU Selection** (shown when multiple `IOAccelerator` devices exist): Automatically chooses the NVIDIA device when unambiguously identifiable (`vendor-id == 0x10de` / non-conflicting signals) or lets you pick a device manually without ever summing GPUs or mislabeling another GPU as NVIDIA.
-- **Circular Hero Gauges**: Displays **Temperature** (`Temperature(C)` in `°C`, never treated as a percentage) and **GPU Core** utilization.
-- **Interactive Usage History Graph** (`60s` rolling window): Inspect **GPU Core**, **Device Utilization**, **Memory Utilization**, **Video Engine**, **Video Decode**, or **All Percentages** side by side (never summed).
-- **Per-Metric Bars & Live Sparklines** (`0–100%` visual scale):
-  1. **GPU Core** — `GPU Core Utilization %`
-  2. **Device Utilization** — `Device Utilization %`
-  3. **Memory Utilization** — `GPU Memory Utilization %`
-  4. **Video Engine** — `GPU Video Engine Utilization %`
-  5. **Video Decode** — `GPU Video Decode Utilization %`
+- **Circular Hero Gauges**: Displays **Temperature** (`Temperature(C)` in `°C`, never treated as a percentage) and **GPU Utilization**.
+- **Interactive Usage History Graph** (`60s` rolling window): Inspect **GPU Utilization**, **Memory Utilization**, **Video Engine**, **Video Decode**, or **All Percentages** side by side (never summed), or click any metric card below to focus it.
+- **2×2 Metric Chart Grid** (`0–100%` visual scale):
+  1. **GPU Utilization** — `GPU Core Utilization %`
+  2. **Memory Utilization** — `GPU Memory Utilization %`
+  3. **Video Engine** — `GPU Video Engine Utilization %`
+  4. **Video Decode** — `GPU Video Decode Utilization %`
+  *(Note: NullMoth `NVAccel` populates `Device Utilization %` identically from the exact same internal counter as `GPU Core Utilization %`, so the redundant entry is omitted.)*
 - **Honest Anomaly Handling**:
   - Missing, boolean, non-numeric, or unreadable properties display `Unavailable` (and leave gaps in time-series graphs rather than dropping to `0%`).
   - Values outside `0–100%` preserve the raw numeric reading and show an unexpected-value warning while clamping only the visual bar/plot bounds.
-  - Read errors display an explicit error banner and preserve the timestamp of the last successful read.
+  - Read errors display an explicit error banner instead of stale numbers.
 - **Launch at Login (Opt-in, Disabled by Default)**: Uses native `SMAppService.mainApp` only when you explicitly turn on the **Launch at login** switch in the popover.
 - **Quit (`⌘Q`)** button for clean termination and full native **Light / Dark** appearance support.
 

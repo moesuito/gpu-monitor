@@ -30,10 +30,12 @@ enum MetricValue: Equatable, Sendable {
     }
 }
 
-/// The five percentage utilization indicators exposed under PerformanceStatistics.
+/// The four distinct percentage utilization indicators exposed under PerformanceStatistics.
+/// Note: NullMoth's NVAccel populates `"Device Utilization %"` identically from the same internal
+/// GPU core utilization field (`0x1044`) as `"GPU Core Utilization %"`, so only one GPU utilization
+/// indicator is surfaced.
 enum PercentageMetricKind: String, CaseIterable, Identifiable, Sendable {
     case gpuCore = "GPU Core Utilization %"
-    case device = "Device Utilization %"
     case memory = "GPU Memory Utilization %"
     case videoEngine = "GPU Video Engine Utilization %"
     case videoDecode = "GPU Video Decode Utilization %"
@@ -45,9 +47,7 @@ enum PercentageMetricKind: String, CaseIterable, Identifiable, Sendable {
     var displayLabel: String {
         switch self {
         case .gpuCore:
-            return "GPU Core"
-        case .device:
-            return "Device Utilization"
+            return "GPU Utilization"
         case .memory:
             return "Memory Utilization"
         case .videoEngine:

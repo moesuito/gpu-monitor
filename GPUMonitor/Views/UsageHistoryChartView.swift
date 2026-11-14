@@ -5,8 +5,6 @@ extension PercentageMetricKind {
         switch self {
         case .gpuCore:
             return .blue
-        case .device:
-            return .cyan
         case .memory:
             return .mint
         case .videoEngine:
@@ -49,6 +47,8 @@ struct UsageHistoryChartView: View {
     let series: [UsageHistorySeries]
     let maxSamples: Int
     let showDetailedGrid: Bool
+    let verticalGridColumns: Int
+    let showsEmptyPlaceholder: Bool
     let cornerRadius: CGFloat
 
     @Environment(\.colorScheme) private var colorScheme
@@ -57,11 +57,15 @@ struct UsageHistoryChartView: View {
         series: [UsageHistorySeries],
         maxSamples: Int = 60,
         showDetailedGrid: Bool = true,
+        verticalGridColumns: Int = 6,
+        showsEmptyPlaceholder: Bool = true,
         cornerRadius: CGFloat = 6
     ) {
         self.series = series
         self.maxSamples = max(2, maxSamples)
         self.showDetailedGrid = showDetailedGrid
+        self.verticalGridColumns = verticalGridColumns
+        self.showsEmptyPlaceholder = showsEmptyPlaceholder
         self.cornerRadius = cornerRadius
     }
 
@@ -76,7 +80,7 @@ struct UsageHistoryChartView: View {
                 }
             }
 
-            if showDetailedGrid, !hasData {
+            if showsEmptyPlaceholder, showDetailedGrid, !hasData {
                 Text("Collecting samples…")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
@@ -114,11 +118,10 @@ struct UsageHistoryChartView: View {
             context.stroke(path, with: .color(gridColor), lineWidth: 0.5)
         }
 
-        guard showDetailedGrid else { return }
+        guard showDetailedGrid, verticalGridColumns > 1 else { return }
 
-        let columns = 6
-        for index in 1..<columns {
-            let x = size.width * (CGFloat(index) / CGFloat(columns))
+        for index in 1..<verticalGridColumns {
+            let x = size.width * (CGFloat(index) / CGFloat(verticalGridColumns))
             var path = Path()
             path.move(to: CGPoint(x: x, y: 0))
             path.addLine(to: CGPoint(x: x, y: size.height))

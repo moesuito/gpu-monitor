@@ -6,6 +6,11 @@ struct MenuBarPanelView: View {
 
     @Environment(\.colorScheme) private var colorScheme
 
+    private let metricGridColumns = [
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8)
+    ]
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             headerSection
@@ -22,7 +27,7 @@ struct MenuBarPanelView: View {
 
             SectionHeaderDivider(title: "Metrics")
 
-            VStack(alignment: .leading, spacing: 5) {
+            LazyVGrid(columns: metricGridColumns, spacing: 8) {
                 ForEach(PercentageMetricKind.allCases) { kind in
                     let isSelected = viewModel.selectedHistoryMode == .metric(kind)
                     MetricRowView(
@@ -38,14 +43,13 @@ struct MenuBarPanelView: View {
                 }
             }
 
-            SectionHeaderDivider(title: "Details")
+            if viewModel.hasMultipleDevices {
+                deviceSelectorSection
+            }
 
-            detailsSection
-
-            Text("Indicators are provided by the driver, may lag, and do not identify the responsible app or codec.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            Divider()
+                .opacity(0.45)
+                .padding(.top, 2)
 
             launchAtLoginSection
 
@@ -54,7 +58,7 @@ struct MenuBarPanelView: View {
         .padding(.horizontal, 12)
         .padding(.top, 11)
         .padding(.bottom, 10)
-        .frame(width: 356)
+        .frame(width: 384)
         .onAppear {
             viewModel.syncLoginItemState()
         }
@@ -134,10 +138,6 @@ struct MenuBarPanelView: View {
     private var usageHistoryCard: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                historySelectionIndicator
-
-                Spacer(minLength: 4)
-
                 Menu {
                     Button("All Percentages") {
                         viewModel.selectedHistoryMode = .all
@@ -149,15 +149,14 @@ struct MenuBarPanelView: View {
                         }
                     }
                 } label: {
-                    HStack(spacing: 4) {
-                        Text(viewModel.selectedHistoryMode.shortLabel)
-                            .font(.system(size: 10.5, weight: .medium))
+                    HStack(spacing: 6) {
+                        historySelectionLabel
                         Image(systemName: "chevron.up.chevron.down")
                             .font(.system(size: 8.5, weight: .semibold))
+                            .foregroundStyle(.secondary)
                     }
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3.5)
                     .background(
                         Capsule(style: .continuous)
                             .fill(Color.primary.opacity(0.07))
@@ -165,15 +164,26 @@ struct MenuBarPanelView: View {
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
+
+                Spacer(minLength: 6)
+
+                if case .metric(let kind) = viewModel.selectedHistoryMode {
+                    Text("Peak \(viewModel.peakPercentageFormatted(for: kind))")
+                        .font(.system(size: 10.5, weight: .medium))
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
             }
 
             UsageHistoryChartView(
                 series: heroHistorySeries,
                 maxSamples: viewModel.history.maxSamples,
                 showDetailedGrid: true,
+                verticalGridColumns: 6,
+                showsEmptyPlaceholder: true,
                 cornerRadius: 6
             )
-            .frame(height: 62)
+            .frame(height: 58)
 
             HStack {
                 Text("\(viewModel.history.maxSamples)s window")
@@ -198,7 +208,7 @@ struct MenuBarPanelView: View {
     }
 
     @ViewBuilder
-    private var historySelectionIndicator: some View {
+    private var historySelectionLabel: some View {
         switch viewModel.selectedHistoryMode {
         case .all:
             HStack(spacing: 5) {
@@ -221,10 +231,6 @@ struct MenuBarPanelView: View {
                 Text(kind.displayLabel)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.primary)
-                Text("· Peak \(viewModel.peakPercentageFormatted(for: kind))")
-                    .font(.system(size: 10.5))
-                    .monospacedDigit()
-                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -252,35 +258,6 @@ struct MenuBarPanelView: View {
                     lineWidth: 1.65
                 )
             ]
-        }
-    }
-
-    private var detailsSection: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            if viewModel.hasMultipleDevices {
-                deviceSelectorSection
-            }
-
-            if let snapshot = viewModel.currentSnapshot {
-                detailRow(label: "Source", value: snapshot.source.label)
-            }
-
-            detailRow(label: "Last read", value: viewModel.lastSuccessfulReadFormatted)
-        }
-    }
-
-    private func detailRow(label: String, value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Spacer()
-
-            Text(value)
-                .font(.caption)
-                .monospacedDigit()
-                .foregroundStyle(.primary)
         }
     }
 
@@ -493,6 +470,7 @@ private struct CircularGaugeView: View {
                 Text(title)
                     .font(.system(size: 10.5, weight: .medium))
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
 
                 if let unavailableSubtitle {
                     Text(unavailableSubtitle)
@@ -501,6 +479,7 @@ private struct CircularGaugeView: View {
                 }
             }
         }
+        .frame(minWidth: 92)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)
         .accessibilityValue(accessibilityValue)

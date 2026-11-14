@@ -20,7 +20,7 @@ This file gives AI coding agents the context, architecture, build commands, and 
   - Sets `LSUIElement = true` and `CFBundleDisplayName = GPU Monitor`.
 - `GPUMonitor/Models/GPUMetrics.swift`
   - `MetricValue` (`available(Double)` / `unavailable`), clamping helper for visual bars/plots only (`clampedPercentageFraction`), and out-of-range detection (`isOutOfPercentageRange`).
-  - `PercentageMetricKind`: The 5 `PerformanceStatistics` utilization keys and UI labels (`GPU Core`, `Device Utilization`, `Memory Utilization`, `Video Engine`, `Video Decode`).
+  - `PercentageMetricKind`: The 4 distinct `PerformanceStatistics` utilization keys and UI labels (`GPU Utilization` for `GPU Core Utilization %`, `Memory Utilization`, `Video Engine`, `Video Decode`; redundant `Device Utilization %` is intentionally omitted because NullMoth `NVAccel` copies the exact same field).
   - `GPUPerformanceParser`: Strict numeric parser + little-endian PCI ID / NUL-trimmed string decoders.
   - `RawAcceleratorEntry`, `GPUDeviceDescriptor`, `DeviceSelectionPolicy`: Reliable GPU naming from parent `IOPCIDevice` `"model"` (fallback `"Detected GPU"`) and multi-GPU selection without summing or mislabeling.
   - `MetricFormatter`: Raw-preserving percentage, `°C` temperature, and menu bar title formatting (`"Unavailable"` / `"GPU —"`).
@@ -37,7 +37,7 @@ This file gives AI coding agents the context, architecture, build commands, and 
 - `GPUMonitor/ViewModels/GPUMonitorViewModel.swift`
   - `@MainActor` `ObservableObject` running a 1-second cooperative `Task` polling loop (`Task.detached(priority: .utility)` for collection). Tracks `currentSnapshot`, `lastSuccessfulReadAt`, `lastErrorMessage`, `history`, `selectedHistoryMode`, `selectedDeviceID`, and `launchAtLoginState`.
 - `GPUMonitor/Views/MenuBarPanelView.swift`, `MetricRowView.swift`, & `UsageHistoryChartView.swift`
-  - Apple-native, Stats-inspired popover (`356pt` width) supporting Light/Dark mode: circular Temperature (`°C`) & GPU Core (`%`) gauges, interactive Usage History chart (`All` or single metric), 5 per-metric cards with progress bars and live Canvas sparklines, multi-GPU selector, error banner, limitation notice, `"Launch at login"` switch, last read details, and `"Quit"` (`⌘Q`).
+  - Apple-native, Stats-inspired popover (`384pt` width) supporting Light/Dark mode: circular Temperature (`°C`) & GPU Utilization (`%`) gauges, selectable full-width Usage History chart (`All Percentages` or single metric), 2×2 grid of per-metric chart cards with progress bars, conditional multi-GPU selector / error banner, `"Launch at login"` switch, status dot, and `"Quit"` (`⌘Q`).
 - `GPUMonitorTests/GPUMonitorTests.swift`
   - Hosted unit tests (`TEST_HOST` is `GPU Monitor.app`).
 
@@ -70,14 +70,14 @@ If you need a custom derived data directory during automated runs, pass `-derive
 3. **Preserve Raw Numeric Values**:
    - Never clamp numeric text when a driver reports `< 0` or `> 100`. Only clamp visual progress bars and chart Y-coordinates (`clampedPercentageFraction` in `[0, 1]`) and show the unexpected-value indicator.
 4. **Never Sum Metrics or GPUs**:
-   - All 5 percentage metrics are independent and must never be summed or stacked.
+   - All 4 percentage metrics are independent and must never be summed or stacked.
    - Multiple `IOAccelerator` devices must never be summed; switching devices resets the rolling `MetricHistoryBuffer`.
    - Only auto-select a GPU as NVIDIA when proven (`vendor-id == 0x10de`, or non-conflicting `10de` / `com.nullmoth.NVAccel` when PCI `vendor-id` is absent). If ambiguous, never label another GPU as NVIDIA and allow user selection.
    - Never invent or guess GPU model names; if `IOPCIDevice` `"model"` is missing or generic (e.g., `"display"`, `"GFX0"`, `"NVAccel"`), display `"Detected GPU"`.
 5. **Terminology & Accuracy**:
    - Keep `"Video Engine"` (do **not** rename to `"NVENC"` or `"Encoder"`).
    - Keep `"Video Decode"` without claiming app or codec attribution.
-   - Preserve the disclaimer: `"Indicators are provided by the driver, may lag, and do not identify the responsible app or codec."`
+   - Do not overclaim driver accuracy or application/codec attribution in docs or future UI copy.
 6. **IOKit Resource & CPU Hygiene**:
    - Every `io_iterator_t` and `io_registry_entry_t` must be paired with `IOObjectRelease` via `defer`.
    - Keep `MetricHistoryBuffer` bounded (default 60 samples) and avoid heavy allocations or continuous animations inside the 1s poll path.

@@ -5,7 +5,7 @@ final class GPUMonitorTests: XCTestCase {
     func testParsesValidPerformanceStatistics() {
         let dict: [String: Any] = [
             "GPU Core Utilization %": 11,
-            "Device Utilization %": 14,
+            "Device Utilization %": 11,
             "GPU Memory Utilization %": 2,
             "GPU Video Engine Utilization %": 0,
             "GPU Video Decode Utilization %": 37,
@@ -14,8 +14,8 @@ final class GPUMonitorTests: XCTestCase {
 
         let parsed = GPUPerformanceParser.parsePerformanceStatistics(dict)
 
+        XCTAssertEqual(parsed.metrics.count, 4)
         XCTAssertEqual(parsed.metrics[.gpuCore], .available(11))
-        XCTAssertEqual(parsed.metrics[.device], .available(14))
         XCTAssertEqual(parsed.metrics[.memory], .available(2))
         XCTAssertEqual(parsed.metrics[.videoEngine], .available(0))
         XCTAssertEqual(parsed.metrics[.videoDecode], .available(37))
@@ -28,17 +28,16 @@ final class GPUMonitorTests: XCTestCase {
 
     func testMissingFieldsBecomeUnavailableNeverZero() {
         let partial: [String: Any] = [
-            "Device Utilization %": 20
+            "GPU Memory Utilization %": 20
         ]
 
         let parsed = GPUPerformanceParser.parsePerformanceStatistics(partial)
 
         XCTAssertEqual(parsed.metrics[.gpuCore], .unavailable)
-        XCTAssertEqual(parsed.metrics[.memory], .unavailable)
+        XCTAssertEqual(parsed.metrics[.memory], .available(20))
         XCTAssertEqual(parsed.metrics[.videoEngine], .unavailable)
         XCTAssertEqual(parsed.metrics[.videoDecode], .unavailable)
         XCTAssertEqual(parsed.temperatureC, .unavailable)
-        XCTAssertEqual(parsed.metrics[.device], .available(20))
 
         XCTAssertEqual(MetricFormatter.formatPercentage(.unavailable), "Unavailable")
         XCTAssertEqual(MetricFormatter.formatTemperature(.unavailable), "Unavailable")
@@ -71,7 +70,7 @@ final class GPUMonitorTests: XCTestCase {
         <dict>
             <key>GPU Core Utilization %</key>
             <integer>0</integer>
-            <key>Device Utilization %</key>
+            <key>GPU Video Decode Utilization %</key>
             <integer>1</integer>
             <key>GPU Memory Utilization %</key>
             <true/>
@@ -86,7 +85,7 @@ final class GPUMonitorTests: XCTestCase {
         let parsed = GPUPerformanceParser.parsePerformanceStatistics(dict)
 
         XCTAssertEqual(parsed.metrics[.gpuCore], .available(0))
-        XCTAssertEqual(parsed.metrics[.device], .available(1))
+        XCTAssertEqual(parsed.metrics[.videoDecode], .available(1))
         XCTAssertEqual(parsed.metrics[.memory], .unavailable)
         XCTAssertEqual(parsed.metrics[.videoEngine], .unavailable)
         XCTAssertEqual(GPUPerformanceParser.parseNumericValue(NSNumber(value: 0)), .available(0))
@@ -98,7 +97,7 @@ final class GPUMonitorTests: XCTestCase {
     func testOutOfRangeValuesKeepRawNumberAndClampOnlyVisualBar() {
         let dict: [String: Any] = [
             "GPU Core Utilization %": 135,
-            "Device Utilization %": -5,
+            "GPU Video Engine Utilization %": -5,
             "GPU Memory Utilization %": 100.002
         ]
 
@@ -110,7 +109,7 @@ final class GPUMonitorTests: XCTestCase {
         XCTAssertEqual(MetricFormatter.formatPercentage(over), "135%")
         XCTAssertEqual(MetricFormatter.formatMenuBarTitle(over), "GPU 135% !")
 
-        let negative = parsed.metrics[.device]!
+        let negative = parsed.metrics[.videoEngine]!
         XCTAssertTrue(negative.isOutOfPercentageRange)
         XCTAssertEqual(negative.clampedPercentageFraction, 0.0, accuracy: 0.0001)
         XCTAssertEqual(MetricFormatter.formatPercentage(negative), "-5%")
@@ -121,8 +120,8 @@ final class GPUMonitorTests: XCTestCase {
     }
 
     func testMetricLabelsPreserveVideoEngineTerminology() {
-        XCTAssertEqual(PercentageMetricKind.gpuCore.displayLabel, "GPU Core")
-        XCTAssertEqual(PercentageMetricKind.device.displayLabel, "Device Utilization")
+        XCTAssertEqual(PercentageMetricKind.allCases.count, 4)
+        XCTAssertEqual(PercentageMetricKind.gpuCore.displayLabel, "GPU Utilization")
         XCTAssertEqual(PercentageMetricKind.memory.displayLabel, "Memory Utilization")
         XCTAssertEqual(PercentageMetricKind.videoEngine.displayLabel, "Video Engine")
         XCTAssertEqual(PercentageMetricKind.videoDecode.displayLabel, "Video Decode")
@@ -337,7 +336,6 @@ final class GPUMonitorTests: XCTestCase {
                 isAmbiguousDeviceSelection: false,
                 metrics: [
                     .gpuCore: .available(18),
-                    .device: .available(20),
                     .memory: .available(5),
                     .videoEngine: .available(0),
                     .videoDecode: .available(12)
@@ -443,7 +441,6 @@ final class GPUMonitorTests: XCTestCase {
                 isAmbiguousDeviceSelection: false,
                 metrics: [
                     .gpuCore: core,
-                    .device: .available(10),
                     .memory: .available(20),
                     .videoEngine: .available(0),
                     .videoDecode: decode
@@ -507,7 +504,6 @@ final class GPUMonitorTests: XCTestCase {
                 isAmbiguousDeviceSelection: false,
                 metrics: [
                     .gpuCore: .available(15),
-                    .device: .available(20),
                     .memory: .available(30),
                     .videoEngine: .available(45),
                     .videoDecode: .available(50)

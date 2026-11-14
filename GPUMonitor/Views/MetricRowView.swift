@@ -12,22 +12,25 @@ struct MetricRowView: View {
 
     var body: some View {
         Button(action: onSelect) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
                     RoundedRectangle(cornerRadius: 2.5, style: .continuous)
                         .fill(indicatorColor)
-                        .frame(width: 8, height: 8)
+                        .frame(width: 7, height: 7)
                         .offset(y: -0.5)
 
                     Text(kind.displayLabel)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.82)
 
-                    Spacer(minLength: 8)
+                    Spacer(minLength: 4)
 
                     Text(MetricFormatter.formatPercentage(value))
-                        .font(.system(size: 12, weight: value.isAvailable ? .semibold : .regular, design: .rounded))
+                        .font(.system(size: 11.5, weight: value.isAvailable ? .semibold : .regular, design: .rounded))
                         .monospacedDigit()
+                        .fixedSize(horizontal: true, vertical: false)
                         .foregroundStyle(valueColor)
                 }
 
@@ -44,7 +47,7 @@ struct MetricRowView: View {
                         }
                     }
                 }
-                .frame(height: 4)
+                .frame(height: 3.5)
                 .accessibilityHidden(true)
 
                 UsageHistoryChartView(
@@ -54,26 +57,31 @@ struct MetricRowView: View {
                             color: indicatorColor,
                             segments: segments,
                             fillArea: true,
-                            lineWidth: 1.25
+                            lineWidth: 1.35
                         )
                     ],
                     maxSamples: maxSamples,
-                    showDetailedGrid: false,
-                    cornerRadius: 4
+                    showDetailedGrid: true,
+                    verticalGridColumns: 3,
+                    showsEmptyPlaceholder: false,
+                    cornerRadius: 5
                 )
-                .frame(height: 18)
+                .frame(height: 54)
 
                 if value.isOutOfPercentageRange {
                     Label(
-                        "Unexpected value (expected 0%–100%)",
+                        "Unexpected (>100% / <0%)",
                         systemImage: "exclamationmark.triangle.fill"
                     )
                     .font(.caption2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                     .foregroundStyle(.orange)
                 }
             }
             .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            .padding(.vertical, 7)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(cardBackgroundColor)

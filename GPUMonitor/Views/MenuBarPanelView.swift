@@ -51,9 +51,7 @@ struct MenuBarPanelView: View {
                 .opacity(0.45)
                 .padding(.top, 2)
 
-            launchAtLoginSection
-
-            footerRow
+            footerSection
         }
         .padding(.horizontal, 12)
         .padding(.top, 11)
@@ -326,19 +324,29 @@ struct MenuBarPanelView: View {
         )
     }
 
-    private var launchAtLoginSection: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Toggle(
-                "Launch at login",
-                isOn: Binding(
-                    get: { viewModel.isLaunchAtLoginEnabled },
-                    set: { viewModel.setLaunchAtLogin($0) }
+    private var footerSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .center, spacing: 8) {
+                Toggle(
+                    "Launch at login",
+                    isOn: Binding(
+                        get: { viewModel.isLaunchAtLoginEnabled },
+                        set: { viewModel.setLaunchAtLogin($0) }
+                    )
                 )
-            )
-            .toggleStyle(.switch)
-            .controlSize(.mini)
-            .font(.caption)
-            .foregroundStyle(.secondary)
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button("Quit") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .keyboardShortcut("q", modifiers: .command)
+                .controlSize(.small)
+            }
 
             if let loginMessage = viewModel.loginItemMessage {
                 Text(loginMessage)
@@ -347,48 +355,6 @@ struct MenuBarPanelView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-    }
-
-    private var footerRow: some View {
-        HStack(spacing: 8) {
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(statusDotColor)
-                    .frame(width: 7, height: 7)
-
-                Text(statusText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Button("Quit") {
-                NSApplication.shared.terminate(nil)
-            }
-            .keyboardShortcut("q", modifiers: .command)
-            .controlSize(.small)
-        }
-    }
-
-    private var statusDotColor: Color {
-        if viewModel.lastErrorMessage != nil {
-            return .orange
-        }
-        if viewModel.currentSnapshot != nil {
-            return .green
-        }
-        return .secondary
-    }
-
-    private var statusText: String {
-        if viewModel.lastErrorMessage != nil {
-            return "Read error"
-        }
-        if viewModel.currentSnapshot != nil {
-            return "Monitoring"
-        }
-        return "Waiting…"
     }
 
     private func temperatureCenterText(for value: MetricValue) -> String {

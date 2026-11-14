@@ -37,7 +37,7 @@ This file gives AI coding agents the context, architecture, build commands, and 
 - `GPUMonitor/ViewModels/GPUMonitorViewModel.swift`
   - `@MainActor` `ObservableObject` running a 1-second cooperative `Task` polling loop (`Task.detached(priority: .utility)` for collection). Tracks `currentSnapshot`, `lastSuccessfulReadAt`, `lastErrorMessage`, `history`, `selectedHistoryMode`, `selectedDeviceID`, and `launchAtLoginState`.
 - `GPUMonitor/Views/MenuBarPanelView.swift`, `MetricRowView.swift`, & `UsageHistoryChartView.swift`
-  - Apple-native, Stats-inspired popover (`384pt` width) supporting Light/Dark mode: circular Temperature (`°C`) & GPU Utilization (`%`) gauges, selectable full-width Usage History chart (`All Percentages` or single metric), 2×2 grid of per-metric chart cards with progress bars, conditional multi-GPU selector / error banner, `"Launch at login"` switch, status dot, and `"Quit"` (`⌘Q`).
+  - Apple-native, Stats-inspired popover (`384pt` width) supporting Light/Dark mode: circular Temperature (`°C`) & GPU Utilization (`%`) gauges, selectable full-width Usage History chart (`All Percentages` or single metric), 2×2 grid of per-metric chart cards with progress bars, conditional multi-GPU selector / error banner, and a single-row footer combining `"Launch at login"` and `"Quit"` (`⌘Q`).
 - `GPUMonitorTests/GPUMonitorTests.swift`
   - Hosted unit tests (`TEST_HOST` is `GPU Monitor.app`).
 

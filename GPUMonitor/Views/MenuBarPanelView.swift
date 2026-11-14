@@ -100,111 +100,35 @@ struct MenuBarPanelView: View {
     }
 
     private var heroGaugesSection: some View {
-        HStack(alignment: .top, spacing: 26) {
+        let temperature = viewModel.temperatureValue
+        let core = viewModel.metricValue(for: .gpuCore)
+
+        return HStack(alignment: .top, spacing: 28) {
             Spacer(minLength: 0)
 
-            temperatureGaugeView
+            CircularGaugeView(
+                title: "Temperature",
+                centerText: temperatureCenterText(for: temperature),
+                unavailableSubtitle: temperature.isAvailable ? nil : MetricFormatter.formatTemperature(temperature),
+                accessibilityValue: MetricFormatter.formatTemperature(temperature),
+                trimFraction: thermalGaugeFraction(for: temperature),
+                ringColor: thermalColor(for: temperature),
+                textColor: temperature.isAvailable ? .primary : .secondary
+            )
 
-            coreGaugeView
+            CircularGaugeView(
+                title: PercentageMetricKind.gpuCore.displayLabel,
+                centerText: coreCenterText(for: core),
+                unavailableSubtitle: core.isAvailable ? nil : MetricFormatter.formatPercentage(core),
+                accessibilityValue: MetricFormatter.formatPercentage(core),
+                trimFraction: core.isAvailable ? core.clampedPercentageFraction : nil,
+                ringColor: core.isOutOfPercentageRange ? .orange : PercentageMetricKind.gpuCore.chartColor,
+                textColor: coreTextColor(for: core)
+            )
 
             Spacer(minLength: 0)
         }
         .padding(.vertical, 2)
-    }
-
-    private var temperatureGaugeView: some View {
-        let value = viewModel.temperatureValue
-        let fraction = thermalGaugeFraction(for: value)
-        let ringColor = thermalColor(for: value)
-
-        return VStack(spacing: 4) {
-            ZStack {
-                Circle()
-                    .stroke(Color.primary.opacity(0.10), lineWidth: 5.5)
-
-                if let fraction {
-                    Circle()
-                        .trim(from: 0, to: fraction)
-                        .stroke(
-                            ringColor,
-                            style: StrokeStyle(lineWidth: 5.5, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                        .animation(.easeInOut(duration: 0.25), value: fraction)
-                }
-
-                Text(temperatureCenterText(for: value))
-                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.65)
-                    .padding(.horizontal, 7)
-                    .foregroundStyle(value.isAvailable ? .primary : .secondary)
-            }
-            .frame(width: 58, height: 58)
-
-            VStack(spacing: 1) {
-                Text("Temperature")
-                    .font(.system(size: 10.5, weight: .medium))
-                    .foregroundStyle(.secondary)
-
-                if !value.isAvailable {
-                    Text(MetricFormatter.formatTemperature(value))
-                        .font(.system(size: 9.5))
-                        .foregroundStyle(.tertiary)
-                }
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Temperature")
-        .accessibilityValue(MetricFormatter.formatTemperature(value))
-    }
-
-    private var coreGaugeView: some View {
-        let value = viewModel.metricValue(for: .gpuCore)
-        let ringColor: Color = value.isOutOfPercentageRange ? .orange : PercentageMetricKind.gpuCore.chartColor
-
-        return VStack(spacing: 4) {
-            ZStack {
-                Circle()
-                    .stroke(Color.primary.opacity(0.10), lineWidth: 7)
-
-                if value.isAvailable {
-                    Circle()
-                        .trim(from: 0, to: value.clampedPercentageFraction)
-                        .stroke(
-                            ringColor,
-                            style: StrokeStyle(lineWidth: 7, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-90))
-                        .animation(.easeInOut(duration: 0.25), value: value.clampedPercentageFraction)
-                }
-
-                Text(coreCenterText(for: value))
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.65)
-                    .padding(.horizontal, 9)
-                    .foregroundStyle(coreTextColor(for: value))
-            }
-            .frame(width: 72, height: 72)
-
-            VStack(spacing: 1) {
-                Text(PercentageMetricKind.gpuCore.displayLabel)
-                    .font(.system(size: 10.5, weight: .medium))
-                    .foregroundStyle(.secondary)
-
-                if !value.isAvailable {
-                    Text(MetricFormatter.formatPercentage(value))
-                        .font(.system(size: 9.5))
-                        .foregroundStyle(.tertiary)
-                }
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(PercentageMetricKind.gpuCore.displayLabel)
-        .accessibilityValue(MetricFormatter.formatPercentage(value))
     }
 
     private var usageHistoryCard: some View {
@@ -523,6 +447,63 @@ struct MenuBarPanelView: View {
         default:
             return .red
         }
+    }
+}
+
+private struct CircularGaugeView: View {
+    let title: String
+    let centerText: String
+    let unavailableSubtitle: String?
+    let accessibilityValue: String
+    let trimFraction: Double?
+    let ringColor: Color
+    let textColor: Color
+
+    private let diameter: CGFloat = 58
+    private let lineWidth: CGFloat = 5.5
+
+    var body: some View {
+        VStack(spacing: 4) {
+            ZStack {
+                Circle()
+                    .stroke(Color.primary.opacity(0.10), lineWidth: lineWidth)
+
+                if let trimFraction {
+                    Circle()
+                        .trim(from: 0, to: trimFraction)
+                        .stroke(
+                            ringColor,
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                        .animation(.easeInOut(duration: 0.25), value: trimFraction)
+                }
+
+                Text(centerText)
+                    .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.65)
+                    .padding(.horizontal, 7)
+                    .foregroundStyle(textColor)
+            }
+            .frame(width: diameter, height: diameter)
+
+            VStack(spacing: 1) {
+                Text(title)
+                    .font(.system(size: 10.5, weight: .medium))
+                    .foregroundStyle(.secondary)
+
+                if let unavailableSubtitle {
+                    Text(unavailableSubtitle)
+                        .font(.system(size: 9.5))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(accessibilityValue)
     }
 }
 

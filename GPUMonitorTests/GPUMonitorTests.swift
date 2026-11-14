@@ -40,8 +40,8 @@ final class GPUMonitorTests: XCTestCase {
         XCTAssertEqual(parsed.temperatureC, .unavailable)
         XCTAssertEqual(parsed.metrics[.device], .available(20))
 
-        XCTAssertEqual(MetricFormatter.formatPercentage(.unavailable), "Indisponível")
-        XCTAssertEqual(MetricFormatter.formatTemperature(.unavailable), "Indisponível")
+        XCTAssertEqual(MetricFormatter.formatPercentage(.unavailable), "Unavailable")
+        XCTAssertEqual(MetricFormatter.formatTemperature(.unavailable), "Unavailable")
         XCTAssertEqual(MetricFormatter.formatMenuBarTitle(.unavailable), "GPU —")
     }
 
@@ -120,9 +120,12 @@ final class GPUMonitorTests: XCTestCase {
         XCTAssertNotEqual(MetricFormatter.formatPercentage(slightlyOver), "100%")
     }
 
-    func testMetricLabelsPreserveMotorDeVideoTerminology() {
-        XCTAssertEqual(PercentageMetricKind.videoEngine.displayLabel, "Motor de vídeo")
-        XCTAssertEqual(PercentageMetricKind.videoDecode.displayLabel, "Decodificação de vídeo")
+    func testMetricLabelsPreserveVideoEngineTerminology() {
+        XCTAssertEqual(PercentageMetricKind.gpuCore.displayLabel, "GPU Core")
+        XCTAssertEqual(PercentageMetricKind.device.displayLabel, "Device Utilization")
+        XCTAssertEqual(PercentageMetricKind.memory.displayLabel, "Memory Utilization")
+        XCTAssertEqual(PercentageMetricKind.videoEngine.displayLabel, "Video Engine")
+        XCTAssertEqual(PercentageMetricKind.videoDecode.displayLabel, "Video Decode")
     }
 
     func testReliableModelNameAndFallbackWithoutInventingModel() {
@@ -156,7 +159,7 @@ final class GPUMonitorTests: XCTestCase {
             performanceStatistics: [:]
         )
         let unknownDescriptor = unknownEntry.makeDescriptor()
-        XCTAssertEqual(unknownDescriptor.displayName, "GPU detectada")
+        XCTAssertEqual(unknownDescriptor.displayName, "Detected GPU")
         XCTAssertFalse(unknownDescriptor.hasReliableModelName)
     }
 
@@ -224,7 +227,7 @@ final class GPUMonitorTests: XCTestCase {
         XCTAssertTrue(ambiguous.isAmbiguous)
         XCTAssertEqual(ambiguous.selectedDescriptor.id, 1)
         XCTAssertNotEqual(ambiguous.selectedDescriptor.vendor, .nvidia)
-        XCTAssertEqual(ambiguous.allDescriptors[1].displayName, "GPU detectada")
+        XCTAssertEqual(ambiguous.allDescriptors[1].displayName, "Detected GPU")
 
         let manual = try DeviceSelectionPolicy.selectDevice(from: [second, first], preferredDeviceID: 2)
         XCTAssertFalse(manual.isAmbiguous)
@@ -271,7 +274,7 @@ final class GPUMonitorTests: XCTestCase {
         let entry = entries[0]
         XCTAssertEqual(entry.entryID, 4294968649)
         XCTAssertEqual(entry.makeDescriptor().vendor, .nvidia)
-        XCTAssertEqual(entry.makeDescriptor().displayName, "GPU detectada")
+        XCTAssertEqual(entry.makeDescriptor().displayName, "Detected GPU")
 
         let parsed = try XCTUnwrap(entry.parsedStatistics)
         XCTAssertEqual(parsed.metrics[.gpuCore], .available(21))
@@ -284,7 +287,7 @@ final class GPUMonitorTests: XCTestCase {
         let fallbackSnapshot = GPUSnapshot(
             device: GPUDeviceDescriptor(
                 id: 1,
-                displayName: "GPU detectada",
+                displayName: "Detected GPU",
                 hasReliableModelName: false,
                 vendor: .nvidia,
                 vendorID: nil,
@@ -345,7 +348,7 @@ final class GPUMonitorTests: XCTestCase {
             )
         )
 
-        let vm = GPUMonitorViewModel(collector: stub)
+        let vm = GPUMonitorViewModel(collector: stub, loginItemManager: StubLoginItemManager())
         vm.pollOnceSynchronously()
 
         XCTAssertEqual(vm.menuBarTitle, "GPU 18%")
@@ -365,19 +368,170 @@ final class GPUMonitorTests: XCTestCase {
     }
 
     @MainActor
-    func testViewModelInitialFailureShowsNenhumaAndUnavailable() {
+    func testViewModelInitialFailureShowsNoneAndUnavailable() {
         let vm = GPUMonitorViewModel(
-            collector: FailingStubCollector(error: GPUCollectionError.noAcceleratorFound)
+            collector: FailingStubCollector(error: GPUCollectionError.noAcceleratorFound),
+            loginItemManager: StubLoginItemManager()
         )
-        XCTAssertEqual(vm.lastSuccessfulReadFormatted, "Aguardando…")
+        XCTAssertEqual(vm.lastSuccessfulReadFormatted, "Waiting…")
 
         vm.pollOnceSynchronously()
         XCTAssertNotNil(vm.lastErrorMessage)
         XCTAssertNil(vm.lastSuccessfulReadAt)
-        XCTAssertEqual(vm.lastSuccessfulReadFormatted, "Nenhuma")
+        XCTAssertEqual(vm.lastSuccessfulReadFormatted, "None")
         XCTAssertEqual(vm.menuBarTitle, "GPU —")
-        XCTAssertEqual(vm.gpuDisplayName, "GPU indisponível")
+        XCTAssertEqual(vm.gpuDisplayName, "GPU unavailable")
         XCTAssertEqual(vm.metricValue(for: .gpuCore), .unavailable)
+    }
+
+    @MainActor
+    func testLaunchAtLoginIsDisabledByDefaultAndHandlesUserToggleAndFailure() {
+        let loginStub = StubLoginItemManager()
+        let vm = GPUMonitorViewModel(
+            collector: FailingStubCollector(error: GPUCollectionError.noAcceleratorFound),
+            loginItemManager: loginStub
+        )
+
+        XCTAssertFalse(vm.isLaunchAtLoginEnabled)
+        XCTAssertEqual(loginStub.setEnabledCalls, [])
+
+        vm.setLaunchAtLogin(true)
+        XCTAssertTrue(vm.isLaunchAtLoginEnabled)
+        XCTAssertNil(vm.loginItemMessage)
+        XCTAssertEqual(loginStub.setEnabledCalls, [true])
+
+        vm.setLaunchAtLogin(false)
+        XCTAssertFalse(vm.isLaunchAtLoginEnabled)
+        XCTAssertEqual(loginStub.setEnabledCalls, [true, false])
+
+        loginStub.shouldFail = true
+        vm.setLaunchAtLogin(true)
+        XCTAssertFalse(vm.isLaunchAtLoginEnabled)
+        XCTAssertNotNil(vm.loginItemMessage)
+    }
+
+    func testMetricHistoryBufferPreservesUnavailableGapsClampsVisualPointsAndResetsOnDeviceChange() {
+        var buffer = MetricHistoryBuffer(maxSamples: 5)
+        let device1 = GPUDeviceDescriptor(
+            id: 100,
+            displayName: "NVIDIA GeForce RTX 3060 Laptop GPU",
+            hasReliableModelName: true,
+            vendor: .nvidia,
+            vendorID: 0x10de,
+            deviceID: 0x2520,
+            ioClass: "NVAccel",
+            bundleIdentifier: "com.nullmoth.NVAccel",
+            entryName: "NVAccel"
+        )
+        let device2 = GPUDeviceDescriptor(
+            id: 200,
+            displayName: "Detected GPU",
+            hasReliableModelName: false,
+            vendor: .unknown,
+            vendorID: nil,
+            deviceID: nil,
+            ioClass: "OtherAccel",
+            bundleIdentifier: "com.other",
+            entryName: "Other"
+        )
+
+        func makeSnapshot(device: GPUDeviceDescriptor, core: MetricValue, decode: MetricValue) -> GPUSnapshot {
+            GPUSnapshot(
+                device: device,
+                availableDevices: [device],
+                selectionReason: .singleDevice,
+                isAmbiguousDeviceSelection: false,
+                metrics: [
+                    .gpuCore: core,
+                    .device: .available(10),
+                    .memory: .available(20),
+                    .videoEngine: .available(0),
+                    .videoDecode: decode
+                ],
+                temperatureC: .available(55),
+                source: .ioKit,
+                timestamp: Date()
+            )
+        }
+
+        buffer.recordSnapshot(makeSnapshot(device: device1, core: .available(25), decode: .available(40)))
+        buffer.recordSnapshot(makeSnapshot(device: device1, core: .available(140), decode: .unavailable))
+        buffer.recordFailure()
+        buffer.recordSnapshot(makeSnapshot(device: device1, core: .available(60), decode: .available(-10)))
+
+        XCTAssertEqual(buffer.points(for: .gpuCore).count, 4)
+        XCTAssertEqual(buffer.peakValue(for: .gpuCore), 140)
+
+        // Two separate contiguous segments around the failure gap, right-aligned to slots [1, 2] and [4] out of 0..<5.
+        let coreSegments = buffer.contiguousAvailableSegments(for: .gpuCore)
+        XCTAssertEqual(coreSegments.count, 2)
+        XCTAssertEqual(coreSegments[0], [
+            PlottedHistoryPoint(slotIndex: 1, fraction: 0.25),
+            PlottedHistoryPoint(slotIndex: 2, fraction: 1.0)
+        ])
+        XCTAssertEqual(coreSegments[1], [
+            PlottedHistoryPoint(slotIndex: 4, fraction: 0.60)
+        ])
+
+        // Unavailable readings leave gaps instead of plotting 0%, and negative values clamp visually to 0.0.
+        let decodeSegments = buffer.contiguousAvailableSegments(for: .videoDecode)
+        XCTAssertEqual(decodeSegments.count, 2)
+        XCTAssertEqual(decodeSegments[0], [PlottedHistoryPoint(slotIndex: 1, fraction: 0.40)])
+        XCTAssertEqual(decodeSegments[1], [PlottedHistoryPoint(slotIndex: 4, fraction: 0.0)])
+
+        // Switching to another GPU resets history so two devices are never mixed.
+        buffer.recordSnapshot(makeSnapshot(device: device2, core: .available(5), decode: .available(5)))
+        XCTAssertEqual(buffer.deviceID, 200)
+        XCTAssertEqual(buffer.points(for: .gpuCore).count, 1)
+    }
+
+    @MainActor
+    func testViewModelRecordsHistoryAcrossAllPercentagesAndSwitchesChartSelection() {
+        let stub = MutableStubCollector()
+        let device = GPUDeviceDescriptor(
+            id: 1,
+            displayName: "NVIDIA GeForce RTX 3060 Laptop GPU",
+            hasReliableModelName: true,
+            vendor: .nvidia,
+            vendorID: 0x10de,
+            deviceID: 0x2520,
+            ioClass: "NVAccel",
+            bundleIdentifier: "com.nullmoth.NVAccel",
+            entryName: "NVAccel"
+        )
+        stub.result = .success(
+            GPUSnapshot(
+                device: device,
+                availableDevices: [device],
+                selectionReason: .singleDevice,
+                isAmbiguousDeviceSelection: false,
+                metrics: [
+                    .gpuCore: .available(15),
+                    .device: .available(20),
+                    .memory: .available(30),
+                    .videoEngine: .available(45),
+                    .videoDecode: .available(50)
+                ],
+                temperatureC: .available(60),
+                source: .ioKit,
+                timestamp: Date()
+            )
+        )
+
+        let vm = GPUMonitorViewModel(collector: stub, loginItemManager: StubLoginItemManager())
+        XCTAssertEqual(vm.selectedHistoryMode, .metric(.gpuCore))
+
+        vm.pollOnceSynchronously()
+        for kind in PercentageMetricKind.allCases {
+            XCTAssertEqual(vm.history.points(for: kind).count, 1)
+        }
+        XCTAssertEqual(vm.peakPercentageFormatted(for: .videoEngine), "45%")
+
+        vm.selectHistoryMetric(.videoDecode)
+        XCTAssertEqual(vm.selectedHistoryMode, .metric(.videoDecode))
+
+        vm.selectedHistoryMode = .all
+        XCTAssertEqual(vm.selectedHistoryMode.title, "All Percentages")
     }
 
     @MainActor
@@ -395,6 +549,25 @@ final class GPUMonitorTests: XCTestCase {
             return true
         }
         return view.subviews.contains { containsStatusBarButton(in: $0) }
+    }
+}
+
+private final class StubLoginItemManager: LoginItemManaging, @unchecked Sendable {
+    var state: LoginItemState = .disabled
+    var shouldFail = false
+    var setEnabledCalls: [Bool] = []
+
+    func currentState() -> LoginItemState {
+        state
+    }
+
+    func setEnabled(_ enabled: Bool) throws -> LoginItemState {
+        setEnabledCalls.append(enabled)
+        if shouldFail {
+            throw NSError(domain: "StubLogin", code: 1, userInfo: [NSLocalizedDescriptionKey: "Simulated error"])
+        }
+        state = enabled ? .enabled : .disabled
+        return state
     }
 }
 

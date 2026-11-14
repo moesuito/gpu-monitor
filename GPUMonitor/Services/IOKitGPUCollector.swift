@@ -1,7 +1,7 @@
 import Foundation
 import IOKit
 
-/// Lê métricas e metadados de dispositivos `IOAccelerator` diretamente via IOKit/IORegistry.
+/// Reads metrics and metadata from `IOAccelerator` devices directly via IOKit/IORegistry.
 struct IOKitGPUCollector: GPUCollecting {
     func collectSnapshot(preferredDeviceID: UInt64?) throws -> GPUSnapshot {
         let entries = try readAcceleratorEntries()

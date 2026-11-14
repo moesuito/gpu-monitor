@@ -1,14 +1,42 @@
 import Foundation
 import Combine
 
+enum HistoryChartSelection: Equatable, Hashable, Sendable {
+    case all
+    case metric(PercentageMetricKind)
+
+    var title: String {
+        switch self {
+        case .all:
+            return "All Percentages"
+        case .metric(let kind):
+            return kind.displayLabel
+        }
+    }
+
+    var shortLabel: String {
+        switch self {
+        case .all:
+            return "All"
+        case .metric(let kind):
+            return kind.displayLabel
+        }
+    }
+}
+
 @MainActor
 final class GPUMonitorViewModel: ObservableObject {
     @Published private(set) var currentSnapshot: GPUSnapshot?
     @Published private(set) var lastSuccessfulReadAt: Date?
     @Published private(set) var lastErrorMessage: String?
+    @Published private(set) var launchAtLoginState: LoginItemState
+    @Published private(set) var loginItemMessage: String?
+    @Published private(set) var history = MetricHistoryBuffer(maxSamples: 60)
+    @Published var selectedHistoryMode: HistoryChartSelection = .metric(.gpuCore)
     @Published var selectedDeviceID: UInt64?
 
     private let collector: any GPUCollecting
+    private let loginItemManager: any LoginItemManaging
     private var pollingTask: Task<Void, Never>?
     private var isCollecting = false
     private let pollIntervalSeconds: TimeInterval
@@ -22,10 +50,13 @@ final class GPUMonitorViewModel: ObservableObject {
 
     init(
         collector: any GPUCollecting = CompositeGPUCollector(),
+        loginItemManager: any LoginItemManaging = MainAppLoginItemManager(),
         pollIntervalSeconds: TimeInterval = 1.0
     ) {
         self.collector = collector
+        self.loginItemManager = loginItemManager
         self.pollIntervalSeconds = pollIntervalSeconds
+        self.launchAtLoginState = loginItemManager.currentState()
     }
 
     deinit {
@@ -54,8 +85,15 @@ final class GPUMonitorViewModel: ObservableObject {
     }
 
     func selectDevice(_ id: UInt64) {
-        selectedDeviceID = id
+        if selectedDeviceID != id {
+            selectedDeviceID = id
+            history.reset()
+        }
         refreshNow()
+    }
+
+    func selectHistoryMetric(_ kind: PercentageMetricKind) {
+        selectedHistoryMode = .metric(kind)
     }
 
     func refreshNow() {
@@ -83,7 +121,7 @@ final class GPUMonitorViewModel: ObservableObject {
         }
     }
 
-    /// Executa uma coleta síncrona em testes unitários.
+    /// Runs a single synchronous collection pass for unit tests.
     func pollOnceSynchronously() {
         let preferredID = selectedDeviceID
         do {
@@ -105,7 +143,7 @@ final class GPUMonitorViewModel: ObservableObject {
         if let snapshot = currentSnapshot {
             return snapshot.device.displayName
         }
-        return lastErrorMessage == nil ? "GPU detectada" : "GPU indisponível"
+        return lastErrorMessage == nil ? "Detected GPU" : "GPU unavailable"
     }
 
     var availableDevices: [GPUDeviceDescriptor] {
@@ -122,7 +160,7 @@ final class GPUMonitorViewModel: ObservableObject {
 
     var lastSuccessfulReadFormatted: String {
         guard let lastSuccessfulReadAt else {
-            return lastErrorMessage == nil ? "Aguardando…" : "Nenhuma"
+            return lastErrorMessage == nil ? "Waiting…" : "None"
         }
         return Self.timeFormatter.string(from: lastSuccessfulReadAt)
     }
@@ -132,6 +170,13 @@ final class GPUMonitorViewModel: ObservableObject {
             return .unavailable
         }
         return snapshot.metrics[kind] ?? .unavailable
+    }
+
+    func peakPercentageFormatted(for kind: PercentageMetricKind) -> String {
+        guard let peak = history.peakValue(for: kind) else {
+            return MetricFormatter.formatPercentage(.unavailable)
+        }
+        return MetricFormatter.formatPercentage(.available(peak))
     }
 
     var temperatureValue: MetricValue {
@@ -147,14 +192,42 @@ final class GPUMonitorViewModel: ObservableObject {
         case .singleDevice:
             return nil
         case .autoSelectedNvidia(let total):
-            return "NVIDIA selecionada automaticamente entre \(total) dispositivos IOAccelerator."
+            return "Automatically selected NVIDIA among \(total) IOAccelerator devices."
         case .userSelected(let total):
-            return "Exibindo dispositivo selecionado (\(total) dispositivos IOAccelerator detectados)."
+            return "Showing selected device (\(total) IOAccelerator devices detected)."
         case .ambiguousFallbackToFirst(let total, let nvidiaCount):
             if nvidiaCount == 0 {
-                return "Múltiplos IOAccelerator (\(total)) sem NVIDIA identificada com segurança. Exibindo: \(snapshot.device.displayName) (\(snapshot.device.shortHexID))."
+                return "Multiple IOAccelerator devices (\(total)) with no NVIDIA reliably identified. Showing: \(snapshot.device.displayName) (\(snapshot.device.shortHexID))."
             }
-            return "Múltiplos IOAccelerator NVIDIA (\(nvidiaCount) de \(total)) detectados. Selecione o dispositivo desejado."
+            return "Multiple NVIDIA IOAccelerator devices (\(nvidiaCount) of \(total)) detected. Choose the desired device."
+        }
+    }
+
+    var isLaunchAtLoginEnabled: Bool {
+        launchAtLoginState.isEnabled
+    }
+
+    func syncLoginItemState() {
+        launchAtLoginState = loginItemManager.currentState()
+        if launchAtLoginState == .requiresApproval {
+            loginItemMessage = "Approval required in System Settings › General › Login Items."
+        } else if launchAtLoginState == .enabled {
+            loginItemMessage = nil
+        }
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            let newState = try loginItemManager.setEnabled(enabled)
+            launchAtLoginState = newState
+            if newState == .requiresApproval {
+                loginItemMessage = "Approval required in System Settings › General › Login Items."
+            } else {
+                loginItemMessage = nil
+            }
+        } catch {
+            launchAtLoginState = loginItemManager.currentState()
+            loginItemMessage = "Unable to update launch at login (\(error.localizedDescription))."
         }
     }
 
@@ -162,9 +235,11 @@ final class GPUMonitorViewModel: ObservableObject {
         currentSnapshot = snapshot
         lastSuccessfulReadAt = snapshot.timestamp
         lastErrorMessage = nil
+        history.recordSnapshot(snapshot)
     }
 
     private func applyFailure(_ error: Error) {
         lastErrorMessage = error.localizedDescription
+        history.recordFailure(at: Date())
     }
 }

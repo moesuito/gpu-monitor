@@ -1,7 +1,7 @@
 import Foundation
 
-/// Coletor de fallback que executa `/usr/sbin/ioreg -r -c IOAccelerator -d 1 -a`
-/// em segundo plano e interpreta a saída XML plist estruturada (independente da ordem das chaves).
+/// Fallback collector that executes `/usr/sbin/ioreg -r -c IOAccelerator -d 1 -a`
+/// in the background and parses the structured XML plist regardless of key order.
 struct IORegFallbackCollector: GPUCollecting {
     static let defaultExecutablePath = "/usr/sbin/ioreg"
 
@@ -68,14 +68,14 @@ struct IORegFallbackCollector: GPUCollecting {
             execute: timeoutWorkItem
         )
 
-        // Ler stdout antes de aguardar término evita deadlock caso o buffer do pipe encha.
+        // Read stdout before waiting for exit to avoid pipe buffer deadlocks.
         let outputData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
         let errorData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
         timeoutWorkItem.cancel()
 
         if timedOutFlag.isTimedOut {
-            throw GPUCollectionError.fallbackProcessFailed("tempo limite excedido")
+            throw GPUCollectionError.fallbackProcessFailed("timed out")
         }
 
         guard process.terminationStatus == 0 else {

@@ -4,7 +4,7 @@ protocol GPUCollecting: Sendable {
     func collectSnapshot(preferredDeviceID: UInt64?) throws -> GPUSnapshot
 }
 
-/// Coletor composto que usa IOKit diretamente como caminho principal e `ioreg -a` estruturado como fallback.
+/// Composite collector that queries IOKit directly first and falls back to structured `ioreg -a`.
 struct CompositeGPUCollector: GPUCollecting {
     private let primary: any GPUCollecting
     private let fallback: any GPUCollecting

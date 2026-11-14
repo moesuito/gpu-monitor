@@ -17,6 +17,9 @@
 		A10000080000000000000001 /* MetricRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000001 /* MetricRowView.swift */; };
 		A10000090000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000090000000000000001 /* Assets.xcassets */; };
 		A10000100000000000000001 /* GPUMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000110000000000000001 /* GPUMonitorTests.swift */; };
+		A10000110000000000000001 /* LoginItemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000120000000000000001 /* LoginItemService.swift */; };
+		A10000120000000000000001 /* MetricHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000130000000000000001 /* MetricHistory.swift */; };
+		A10000130000000000000001 /* UsageHistoryChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000140000000000000001 /* UsageHistoryChartView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,6 +44,9 @@
 		A20000090000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000100000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000110000000000000001 /* GPUMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPUMonitorTests.swift; sourceTree = "<group>"; };
+		A20000120000000000000001 /* LoginItemService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemService.swift; sourceTree = "<group>"; };
+		A20000130000000000000001 /* MetricHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricHistory.swift; sourceTree = "<group>"; };
+		A20000140000000000000001 /* UsageHistoryChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageHistoryChartView.swift; sourceTree = "<group>"; };
 		A30000010000000000000001 /* GPU Monitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GPU Monitor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A30000020000000000000001 /* GPUMonitorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GPUMonitorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -90,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000020000000000000001 /* GPUMetrics.swift */,
+				A20000130000000000000001 /* MetricHistory.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -100,6 +107,7 @@
 				A20000030000000000000001 /* GPUCollecting.swift */,
 				A20000040000000000000001 /* IOKitGPUCollector.swift */,
 				A20000050000000000000001 /* IORegFallbackCollector.swift */,
+				A20000120000000000000001 /* LoginItemService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -117,6 +125,7 @@
 			children = (
 				A20000070000000000000001 /* MenuBarPanelView.swift */,
 				A20000080000000000000001 /* MetricRowView.swift */,
+				A20000140000000000000001 /* UsageHistoryChartView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -197,11 +206,10 @@
 			};
 			buildConfigurationList = E10000010000000000000001 /* Build configuration list for PBXProject "GPUMonitor" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = pt;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				pt,
 				Base,
 			);
 			mainGroup = D10000010000000000000001;
@@ -240,12 +248,15 @@
 			files = (
 				A10000010000000000000001 /* GPUMonitorApp.swift in Sources */,
 				A10000020000000000000001 /* GPUMetrics.swift in Sources */,
+				A10000120000000000000001 /* MetricHistory.swift in Sources */,
 				A10000030000000000000001 /* GPUCollecting.swift in Sources */,
 				A10000040000000000000001 /* IOKitGPUCollector.swift in Sources */,
 				A10000050000000000000001 /* IORegFallbackCollector.swift in Sources */,
+				A10000110000000000000001 /* LoginItemService.swift in Sources */,
 				A10000060000000000000001 /* GPUMonitorViewModel.swift in Sources */,
 				A10000070000000000000001 /* MenuBarPanelView.swift in Sources */,
 				A10000080000000000000001 /* MetricRowView.swift in Sources */,
+				A10000130000000000000001 /* UsageHistoryChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

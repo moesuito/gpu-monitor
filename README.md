@@ -1,84 +1,93 @@
 # GPU Monitor
 
-**GPU Monitor** é um aplicativo nativo e leve para macOS (`x86_64`), em Swift e SwiftUI, feito para monitorar GPUs NVIDIA através do driver **NullMoth** (`IOAccelerator` / `NVAccel`).
+**GPU Monitor** is a lightweight, native macOS (`x86_64`) menu bar monitor app for **NVIDIA GPUs** using the **NullMoth** driver (`IOAccelerator` / `NVAccel`).
 
-Ele vive na barra de menus do macOS (como o Stats), sem janela principal automática nem ícone no Dock, lendo diretamente do `IORegistry` o dicionário `PerformanceStatistics` publicado pelo driver.
+Written natively in Swift and SwiftUI, it lives in the macOS menu bar with an Apple-native, Stats-inspired popover—showing circular temperature and core gauges, an interactive rolling usage history chart, and individual live usage graphs for every percentage metric read directly from `IORegistry`'s `PerformanceStatistics` dictionary.
 
-## O que o app exibe
+## Features
 
-### Barra de menus
-- Ícone discreto (`cpu`) ao lado do percentual do núcleo, por exemplo: `GPU 18%`.
-- Atualiza aproximadamente a cada 1 segundo, mesmo com o painel fechado.
-- Quando o indicador do núcleo não está disponível ou ocorre falha de leitura, exibe `GPU —` (nunca `0%` por padrão).
+### Menu Bar Item
+- Subtle `cpu` SF Symbol next to the GPU Core percentage (for example, `GPU 18%`), using monospaced digits.
+- Polls roughly every **1 second** even while the popover is closed.
+- Displays `GPU —` (never `0%`) whenever `GPU Core Utilization %` is unavailable or fails to read.
+- Runs as a pure menu bar utility (`LSUIElement = true`) with no Dock icon and no automatic main window.
 
-### Painel compacto
-- **Nome da GPU**: obtido de forma confiável a partir da propriedade `model` do `IOPCIDevice` pai (por exemplo, `NVIDIA GeForce RTX 3060 Laptop GPU`), ou `GPU detectada` caso não seja possível identificá-lo com segurança.
-- **Seletor multi-GPU** (exibido apenas quando há mais de um `IOAccelerator`): seleciona automaticamente a GPU NVIDIA quando identificada de forma inequívoca (`vendor-id == 0x10de` / sinais não conflitantes) ou permite escolher o dispositivo manualmente sem somar GPUs nem rotular outra GPU como NVIDIA.
-- **Indicadores percentuais** (individuais, nunca somados, com barra visual de `0` a `100%`):
-  1. **Núcleo da GPU** — `GPU Core Utilization %`
-  2. **Uso do dispositivo** — `Device Utilization %`
-  3. **Utilização da memória** — `GPU Memory Utilization %`
-  4. **Motor de vídeo** — `GPU Video Engine Utilization %`
-  5. **Decodificação de vídeo** — `GPU Video Decode Utilization %`
-- **Temperatura** — `Temperature(C)`, exibida separadamente em `°C` (sem barra percentual).
-- **Tratamento de anomalias**:
-  - Campo ausente, booleano ou não numérico → exibe `Indisponível`.
-  - Valor numérico fora de `0–100%` → preserva o número bruto na leitura e exibe aviso de valor inesperado, limitando apenas a barra visual ao intervalo `0–100%`.
-  - Falha de leitura → exibe estado claro de erro e preserva o horário da última leitura bem-sucedida.
-- **Botão Sair** (`⌘Q`) para encerrar o aplicativo normalmente.
-- Suporte nativo aos modos **claro** e **escuro** do macOS.
+### Popover Dashboard
+- **GPU Identification**: Reads the parent `IOPCIDevice` `model` property reliably (for example, `NVIDIA GeForce RTX 3060 Laptop GPU`), or falls back to `Detected GPU` without guessing a model name.
+- **Multi-GPU Selection** (shown when multiple `IOAccelerator` devices exist): Automatically chooses the NVIDIA device when unambiguously identifiable (`vendor-id == 0x10de` / non-conflicting signals) or lets you pick a device manually without ever summing GPUs or mislabeling another GPU as NVIDIA.
+- **Circular Hero Gauges**: Displays **Temperature** (`Temperature(C)` in `°C`, never treated as a percentage) and **GPU Core** utilization.
+- **Interactive Usage History Graph** (`60s` rolling window): Inspect **GPU Core**, **Device Utilization**, **Memory Utilization**, **Video Engine**, **Video Decode**, or **All Percentages** side by side (never summed).
+- **Per-Metric Bars & Live Sparklines** (`0–100%` visual scale):
+  1. **GPU Core** — `GPU Core Utilization %`
+  2. **Device Utilization** — `Device Utilization %`
+  3. **Memory Utilization** — `GPU Memory Utilization %`
+  4. **Video Engine** — `GPU Video Engine Utilization %`
+  5. **Video Decode** — `GPU Video Decode Utilization %`
+- **Honest Anomaly Handling**:
+  - Missing, boolean, non-numeric, or unreadable properties display `Unavailable` (and leave gaps in time-series graphs rather than dropping to `0%`).
+  - Values outside `0–100%` preserve the raw numeric reading and show an unexpected-value warning while clamping only the visual bar/plot bounds.
+  - Read errors display an explicit error banner and preserve the timestamp of the last successful read.
+- **Launch at Login (Opt-in, Disabled by Default)**: Uses native `SMAppService.mainApp` only when you explicitly turn on the **Launch at login** switch in the popover.
+- **Quit (`⌘Q`)** button for clean termination and full native **Light / Dark** appearance support.
 
-## Como funciona a coleta
+## How Collection Works
 
-- **Caminho principal (`IOKit`)**: enumera dispositivos `IOAccelerator` via `IOServiceGetMatchingServices` e consulta apenas as propriedades necessárias com `IORegistryEntryCreateCFProperty`, sem shell e sem exigir `sudo`, alterações de permissões, extensões ou acesso à EFI.
-- **Fallback estruturado (`ioreg`)**: caso a leitura direta via `IOKit` falhe, executa `/usr/sbin/ioreg -r -c IOAccelerator -d 1 -a` em segundo plano e interpreta o plist XML independentemente da ordem das chaves.
-- **Sem recursos extras**: 100% local e somente leitura, sem comunicação com a internet, telemetria, gráficos históricos, daemons ou inicialização automática com o macOS.
+- **Primary Reader (`IOKit`)**: Enumerates `IOAccelerator` entries with `IOServiceGetMatchingServices` and performs targeted `IORegistryEntryCreateCFProperty` lookups—no shell execution, no `sudo`, no permission changes, no kernel extension changes, and no EFI edits.
+- **Structured Fallback (`ioreg`)**: If direct `IOKit` reading fails, runs `/usr/sbin/ioreg -r -c IOAccelerator -d 1 -a` in the background with a timeout and parses the XML plist regardless of key order.
+- **Local & Read-Only**: Zero internet communication, zero telemetry, and zero background helper daemons.
 
-## Precisão e limitações
+## Accuracy & Limitations
 
-> Os indicadores são fornecidos pelo driver, podem ter atraso e não identificam o aplicativo ou codec responsável.
+> Indicators are provided by the driver, may lag, and do not identify the responsible app or codec.
 
-- O campo `GPU Video Engine Utilization %` é exibido como **Motor de vídeo** (não como `NVENC` ou `Encoder`).
-- Um valor positivo não comprova sozinho que um aplicativo específico está usando aceleração de hardware.
+- `GPU Video Engine Utilization %` is intentionally labeled **Video Engine** (not `NVENC` or `Encoder`).
+- A positive utilization reading alone does not prove that a specific application is using hardware acceleration.
 
-## Requisitos e compilação
+## Requirements & Build Instructions
 
-- macOS Intel (`x86_64`) — testado em macOS Tahoe 26.7.3 com driver NullMoth 3.0.
-- Xcode (testado com Xcode 26.6, `MACOSX_DEPLOYMENT_TARGET = 14.0`).
+- Intel macOS (`x86_64`, `MACOSX_DEPLOYMENT_TARGET = 14.0`) — tested on macOS Tahoe 26.7.3 with NullMoth 3.0.
+- Xcode (tested with Xcode 26.6).
 
-### Pelo Xcode
-1. Abra `GPUMonitor.xcodeproj`.
-2. Selecione o esquema **GPUMonitor** (`My Mac`).
-3. Pressione `⌘R` para executar ou `⌘U` para rodar os testes unitários.
+### Build & Run from Xcode
+1. Open `GPUMonitor.xcodeproj`.
+2. Select the **GPUMonitor** scheme (`My Mac`).
+3. Press `⌘R` to run or `⌘U` to execute the unit tests.
 
-### Pelo Terminal
+### Build & Test from Terminal
 ```bash
-# Rodar testes unitários (x86_64)
+# Run unit tests (x86_64)
 xcodebuild test -project GPUMonitor.xcodeproj -scheme GPUMonitor -destination 'platform=macOS,arch=x86_64'
 
-# Compilar Release (x86_64)
+# Build Release app bundle (x86_64)
 xcodebuild build -project GPUMonitor.xcodeproj -scheme GPUMonitor -configuration Release -destination 'platform=macOS,arch=x86_64'
 ```
 
-## Estrutura do repositório
+To install, copy the compiled `GPU Monitor.app` bundle into `/Applications` and launch it. (Moving the app to `/Applications` first is recommended before enabling **Launch at login**.)
+
+## Repository Structure
 
 ```text
 gpu-monitor/
-├── AGENTS.md                         # Guia de contexto e regras para agentes de IA
+├── AGENTS.md                                  # Context and strict invariants for AI coding agents
 ├── README.md
-├── GPUMonitor.xcodeproj/             # Projeto Xcode e esquema compartilhado
+├── GPUMonitor.xcodeproj/                      # Xcode project and shared scheme
 ├── GPUMonitor/
-│   ├── GPUMonitorApp.swift           # MenuBarExtra (.window) + AppDelegate (.accessory)
-│   ├── Info.plist                    # LSUIElement = true
-│   ├── Models/GPUMetrics.swift       # Tipos, parser IORegistry, seleção multi-GPU e formatação
+│   ├── GPUMonitorApp.swift                    # MenuBarExtra (.window) + AppDelegate (.accessory)
+│   ├── Info.plist                             # LSUIElement = true
+│   ├── Models/
+│   │   ├── GPUMetrics.swift                   # Types, IORegistry parser, multi-GPU policy, formatters
+│   │   └── MetricHistory.swift                # Bounded 60s rolling buffer with unavailable-gap segmentation
 │   ├── Services/
-│   │   ├── GPUCollecting.swift       # Protocolo e CompositeGPUCollector
-│   │   ├── IOKitGPUCollector.swift   # Leitura direta IOKit / IORegistry
-│   │   └── IORegFallbackCollector.swift # Fallback estruturado via /usr/sbin/ioreg -a
-│   ├── ViewModels/GPUMonitorViewModel.swift # Polling assíncrono (~1s) e estado da UI
+│   │   ├── GPUCollecting.swift                # Protocol and CompositeGPUCollector
+│   │   ├── IOKitGPUCollector.swift            # Direct IOKit / IORegistry collector
+│   │   ├── IORegFallbackCollector.swift       # Structured /usr/sbin/ioreg -a fallback
+│   │   └── LoginItemService.swift             # Opt-in SMAppService.mainApp wrapper (off by default)
+│   ├── ViewModels/
+│   │   └── GPUMonitorViewModel.swift          # Async ~1s polling, history tracking, UI state
 │   └── Views/
-│       ├── MenuBarPanelView.swift    # Painel compacto da barra de menus
-│       └── MetricRowView.swift       # Linha de indicador com barra 0–100%
+│       ├── MenuBarPanelView.swift             # Native Apple / Stats-inspired menu bar popover
+│       ├── MetricRowView.swift                # Per-metric card with bar and live sparkline
+│       └── UsageHistoryChartView.swift        # Native Canvas time-series chart renderer
 └── GPUMonitorTests/
-    └── GPUMonitorTests.swift         # Testes unitários e de integração com host
+    └── GPUMonitorTests.swift                  # Unit and host integration tests
 ```

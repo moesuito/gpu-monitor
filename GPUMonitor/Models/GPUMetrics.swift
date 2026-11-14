@@ -1,7 +1,7 @@
 import Foundation
 import CoreFoundation
 
-/// Representa o valor lido de um indicador numérico do driver.
+/// Represents a parsed numeric driver metric value.
 enum MetricValue: Equatable, Sendable {
     case available(Double)
     case unavailable
@@ -16,13 +16,13 @@ enum MetricValue: Equatable, Sendable {
         return false
     }
 
-    /// Indica se o valor bruto está fora do intervalo percentual esperado [0, 100].
+    /// Returns true when the raw numeric value falls outside the expected [0, 100] percentage range.
     var isOutOfPercentageRange: Bool {
         guard case .available(let value) = self else { return false }
         return value < 0 || value > 100
     }
 
-    /// Retorna apenas a fração visual [0.0, 1.0] para a barra de progresso, sem alterar o valor bruto.
+    /// Returns the visual progress bar fraction clamped to [0.0, 1.0] without altering the raw value.
     var clampedPercentageFraction: Double {
         guard case .available(let value) = self else { return 0 }
         let clamped = min(max(value, 0), 100)
@@ -30,7 +30,7 @@ enum MetricValue: Equatable, Sendable {
     }
 }
 
-/// Os cinco indicadores percentuais de utilização expostos em PerformanceStatistics.
+/// The five percentage utilization indicators exposed under PerformanceStatistics.
 enum PercentageMetricKind: String, CaseIterable, Identifiable, Sendable {
     case gpuCore = "GPU Core Utilization %"
     case device = "Device Utilization %"
@@ -45,15 +45,15 @@ enum PercentageMetricKind: String, CaseIterable, Identifiable, Sendable {
     var displayLabel: String {
         switch self {
         case .gpuCore:
-            return "Núcleo da GPU"
+            return "GPU Core"
         case .device:
-            return "Uso do dispositivo"
+            return "Device Utilization"
         case .memory:
-            return "Utilização da memória"
+            return "Memory Utilization"
         case .videoEngine:
-            return "Motor de vídeo"
+            return "Video Engine"
         case .videoDecode:
-            return "Decodificação de vídeo"
+            return "Video Decode"
         }
     }
 }
@@ -89,7 +89,7 @@ enum DataSourceKind: Equatable, Sendable {
     }
 }
 
-/// Metadados de um dispositivo IOAccelerator descoberto no IORegistry.
+/// Metadata describing an IOAccelerator device discovered in IORegistry.
 struct GPUDeviceDescriptor: Identifiable, Equatable, Hashable, Sendable {
     let id: UInt64
     let displayName: String
@@ -121,7 +121,7 @@ struct GPUParsedStatistics: Equatable, Sendable {
     let temperatureC: MetricValue
 }
 
-/// Entrada bruta coletada do IORegistry (ou fallback) antes da política de seleção.
+/// Raw entry collected from IORegistry (or fallback) prior to device selection.
 struct RawAcceleratorEntry: Sendable {
     let entryID: UInt64
     let entryName: String?
@@ -180,7 +180,7 @@ struct RawAcceleratorEntry: Sendable {
         )
         return GPUDeviceDescriptor(
             id: entryID,
-            displayName: reliableModel ?? "GPU detectada",
+            displayName: reliableModel ?? "Detected GPU",
             hasReliableModelName: reliableModel != nil,
             vendor: vendor,
             vendorID: pciVendorID,
@@ -197,7 +197,7 @@ struct RawAcceleratorEntry: Sendable {
         bundleIdentifier: String?,
         ioClass: String?
     ) -> GPUVendor {
-        // Quando há vendor-id PCI explícito do hardware pai, ele é autoritativo.
+        // Explicit parent PCI vendor-id is authoritative when present.
         if let pciVendorID {
             switch pciVendorID {
             case 0x10de: return .nvidia
@@ -208,7 +208,7 @@ struct RawAcceleratorEntry: Sendable {
             }
         }
 
-        // Sem vendor-id PCI (por exemplo no fallback ioreg -d 1), usar apenas sinais explícitos não conflitantes.
+        // Without parent PCI vendor-id (e.g. ioreg -d 1 fallback), rely only on unambiguous matching hints.
         let primary = pciPrimaryMatch?.lowercased() ?? ""
         let bundle = bundleIdentifier?.lowercased() ?? ""
         let klass = ioClass?.lowercased() ?? ""
@@ -349,7 +349,7 @@ enum DeviceSelectionPolicy {
             )
         }
 
-        // Há ambiguidade: não rotular outra GPU como NVIDIA; exibir deterministicamente a primeira e avisar o usuário.
+        // Ambiguous devices: never mislabel another GPU as NVIDIA; deterministically pick the first and warn.
         return DeviceSelectionResult(
             selectedEntry: sorted[0],
             selectedDescriptor: descriptors[0],
@@ -363,7 +363,7 @@ enum DeviceSelectionPolicy {
     }
 }
 
-/// Snapshot completo de uma leitura de GPU.
+/// Complete snapshot of a single GPU reading.
 struct GPUSnapshot: Equatable, Sendable {
     let device: GPUDeviceDescriptor
     let availableDevices: [GPUDeviceDescriptor]
@@ -394,15 +394,15 @@ enum GPUCollectionError: LocalizedError, Equatable, Sendable {
     var errorDescription: String? {
         switch self {
         case .ioKitFailure(let kr):
-            return "Erro ao consultar IOKit (código \(kr))."
+            return "Failed to query IOKit (code \(kr))."
         case .noAcceleratorFound:
-            return "Nenhum dispositivo IOAccelerator encontrado no IORegistry."
+            return "No IOAccelerator device found in IORegistry."
         case .performanceStatisticsUnavailable:
-            return "O dicionário PerformanceStatistics não está disponível para este dispositivo."
+            return "PerformanceStatistics dictionary is unavailable for this device."
         case .fallbackProcessFailed(let detail):
-            return "Falha ao executar leitura de fallback via ioreg: \(detail)"
+            return "Failed to run ioreg fallback reader: \(detail)"
         case .fallbackParsingFailed:
-            return "Não foi possível interpretar a saída estruturada do ioreg."
+            return "Unable to parse structured ioreg output."
         }
     }
 }
@@ -424,8 +424,8 @@ enum GPUPerformanceParser {
     static func parseNumericValue(_ raw: Any?) -> MetricValue {
         guard let raw else { return .unavailable }
 
-        // Não usar `raw is Bool`, pois NSNumber(0) e NSNumber(1) do IORegistry fazem bridge para Bool em Swift;
-        // `CFBooleanGetTypeID()` distingue CFBoolean/Bool reais de CFNumber(0/1).
+        // Never use `raw is Bool` because __NSCFNumber(0) and __NSCFNumber(1) bridge to Bool in Swift.
+        // CFBooleanGetTypeID() reliably distinguishes true CFBoolean/Bool values from CFNumber(0/1).
         let cfType = raw as CFTypeRef
         if CFGetTypeID(cfType) == CFBooleanGetTypeID() {
             return .unavailable
@@ -484,14 +484,14 @@ enum GPUPerformanceParser {
 enum MetricFormatter {
     static func formatPercentage(_ metric: MetricValue) -> String {
         guard case .available(let value) = metric else {
-            return "Indisponível"
+            return "Unavailable"
         }
         return "\(formatNumber(value))%"
     }
 
     static func formatTemperature(_ metric: MetricValue) -> String {
         guard case .available(let value) = metric else {
-            return "Indisponível"
+            return "Unavailable"
         }
         return "\(formatNumber(value)) °C"
     }
@@ -507,7 +507,7 @@ enum MetricFormatter {
     }
 
     static func formatNumber(_ value: Double) -> String {
-        let normalized = (value == 0) ? 0 : value // evita "-0"
+        let normalized = (value == 0) ? 0 : value // avoid "-0"
 
         if normalized.rounded(.towardZero) == normalized,
            normalized >= Double(Int64.min / 2),
@@ -517,9 +517,9 @@ enum MetricFormatter {
 
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "pt_BR")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.minimumFractionDigits = 0
-        // Se estiver muito próximo de 0 ou 100 mas fora da faixa, preserva casas suficientes para nunca exibir 0% ou 100%.
+        // Preserve enough decimal places near 0 or 100 so out-of-range values never display as 0% or 100%.
         if (normalized > 100 && normalized < 100.01) || (normalized < 0 && normalized > -0.01) {
             formatter.maximumFractionDigits = 4
         } else {
